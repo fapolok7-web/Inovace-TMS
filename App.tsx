@@ -278,37 +278,79 @@ const PublicBookingView = () => {
 const AdminLoginView = ({ onLogin }: { onLogin: () => void }) => {
   const [pass, setPass] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(false);
     const ok = await api.adminLogin(pass);
-    if (ok) onLogin();
-    else alert('Invalid Admin Password (Hint: 123456)');
+    if (ok) {
+      onLogin();
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 2000);
+    }
     setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center py-32 px-6 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-50 via-transparent to-transparent">
-      <div className="max-w-md w-full bg-white p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center relative">
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center text-white shadow-2xl">
-          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] px-6 overflow-hidden">
+      {/* Dynamic Background Elements */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-200/40 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-200/40 rounded-full blur-[120px] animate-pulse delay-700" />
+      
+      <div className="max-w-md w-full relative group">
+        <div className={`absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 ${error ? 'from-rose-500 to-orange-500 opacity-50' : ''}`} />
+        
+        <div className="relative bg-white/70 backdrop-blur-xl p-10 md:p-12 rounded-[2.5rem] shadow-2xl border border-white/50 text-center">
+          <div className="mb-10 inline-flex items-center justify-center w-20 h-20 bg-slate-900 rounded-[2rem] text-white shadow-2xl shadow-slate-200">
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          
+          <h2 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Welcome Back</h2>
+          <p className="text-slate-500 mb-10 font-medium">Verify your administrative key to continue.</p>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="relative group">
+              <input 
+                type="password" 
+                placeholder="Access Password"
+                autoFocus
+                value={pass}
+                onChange={e => setPass(e.target.value)}
+                className={`w-full p-6 bg-white border border-slate-200 rounded-[1.5rem] outline-none transition-all text-center font-black tracking-[0.3em] text-xl shadow-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 placeholder:tracking-normal placeholder:font-bold placeholder:text-slate-300 ${error ? 'border-rose-300 ring-rose-500/10' : ''}`}
+              />
+              {error && (
+                <div className="absolute -bottom-8 left-0 right-0 text-rose-500 text-xs font-black uppercase tracking-widest animate-in fade-in slide-in-from-top-2">
+                  Access Denied
+                </div>
+              )}
+            </div>
+            
+            <button 
+              disabled={loading} 
+              className="w-full relative overflow-hidden bg-slate-900 text-white p-6 rounded-[1.5rem] font-black text-lg transition-all shadow-xl hover:shadow-indigo-200/20 active:scale-95 disabled:opacity-50 group/btn cursor-pointer"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Authenticating...
+                  </>
+                ) : 'Unlock Dashboard'}
+              </span>
+            </button>
+            
+            <div className="pt-4 flex flex-col items-center gap-2">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Authorized Personnel Only</span>
+              <p className="text-[10px] text-slate-300 font-bold">(Hint: 123456)</p>
+            </div>
+          </form>
         </div>
-        <h2 className="text-3xl font-black text-slate-900 mb-2 mt-8">Admin Center</h2>
-        <p className="text-slate-400 mb-10 font-medium">Verify credentials to manage slots and view bookings.</p>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input 
-            type="password" 
-            placeholder="Dashboard Password"
-            autoFocus
-            value={pass}
-            onChange={e => setPass(e.target.value)}
-            className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-600 transition-all text-center font-black tracking-widest text-lg"
-          />
-          <button disabled={loading} className="w-full bg-slate-900 text-white p-5 rounded-2xl font-black text-lg hover:bg-black transition-all shadow-xl active:scale-95 cursor-pointer">
-            {loading ? 'Authenticating...' : 'Unlock Control Panel'}
-          </button>
-        </form>
       </div>
     </div>
   );
